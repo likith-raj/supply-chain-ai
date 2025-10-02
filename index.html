@@ -1,12 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Supply Chain AI - Redirecting...</title>
-    <meta http-equiv="refresh" content="0; url=./frontend/index.html">
+    <title>Supply Chain AI - Dashboard</title>
+    <link rel="stylesheet" href="frontend/style.css">
 </head>
 <body>
-    <p>🚚 Redirecting to Supply Chain AI Dashboard... 
-       <a href="./frontend/index.html">Click here if not redirected</a>
-    </p>
+    <div class="dashboard">
+        <h1>🚚 Supply Chain AI Dashboard - ROOT</h1>
+        <div class="cards">
+            <div class="card">
+                <h3>Inventory Status</h3>
+                <p id="stock-level">📦 1,245 units<br>🟢 Good Stock</p>
+            </div>
+            <div class="card">
+                <h3>Active Deliveries</h3>
+                <p id="deliveries">🚚 15 active<br>⏰ 2 delayed<br>✅ 13 on time</p>
+            </div>
+        </div>
+        <button onclick="refreshData()">Refresh Data</button>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="frontend/index.html">Go to Full Dashboard</a>
+        </div>
+    </div>
+    <script>
+        function refreshData() {
+            document.getElementById('stock-level').innerHTML = 
+                '📦 1,245 units<br>🟢 Good Stock';
+            document.getElementById('deliveries').innerHTML = 
+                '🚚 15 active<br>⏰ 2 delayed<br>✅ 13 on time';
+            alert('Data Updated Successfully!');
+        }
+    </script>
 </body>
 </html>
