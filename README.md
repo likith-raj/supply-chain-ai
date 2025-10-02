@@ -21,6 +21,5 @@
 
 
 \## Live Demo
-
-https://yourusername.github.io/supply-chain-ai
+https://likith-raj.github.io/supply-chain-ai/
 
