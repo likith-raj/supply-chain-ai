@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test Page</title>
+    <style>
+        body { font-family: Arial; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { background: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; margin: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Supply Chain AI - API Tester</h1>
+        
+        <!-- Test Backend Home -->
+        <div class="test-section">
+            <h3>1. Test Backend Home</h3>
+            <button onclick="testHome()">Test Backend Home</button>
+            <div id="home-result"></div>
+        </div>
+
+        <!-- Test Login -->
+        <div class="test-section">
+            <h3>2. Test Login API</h3>
+            <button onclick="testLogin('admin', 'admin123')">Test Admin Login</button>
+            <button onclick="testLogin('manager', 'manager123')">Test Manager Login</button>
+            <button onclick="testLogin('viewer', 'viewer123')">Test Viewer Login</button>
+            <button onclick="testLogin('wrong', 'wrong')">Test Wrong Credentials</button>
+            <div id="login-result"></div>
+        </div>
+
+        <!-- Test Protected APIs -->
+        <div class="test-section">
+            <h3>3. Test Protected APIs (After Login)</h3>
+            <button onclick="testInventory()">Test Inventory API</button>
+            <button onclick="testDeliveries()">Test Deliveries API</button>
+            <button onclick="testLowStock()">Test Low Stock API</button>
+            <div id="protected-result"></div>
+        </div>
+
+        <!-- Token Info -->
+        <div class="test-section">
+            <h3>4. Current Token Status</h3>
+            <button onclick="showToken()">Show Current Token</button>
+            <button onclick="clearToken()">Clear Token</button>
+            <div id="token-info"></div>
+        </div>
+
+        <!-- Quick Tests -->
+        <div class="test-section">
+            <h3>5. Quick Full Test</h3>
+            <button onclick="runFullTest()">Run Complete Test</button>
+            <div id="full-test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://supply-chain-ai.onrender.com/api';
+        let currentToken = '';
+
+        // 1. Test Backend Home
+        async function testHome() {
+            try {
+                const response = await fetch('https://supply-chain-ai.onrender.com/');
+                const text = await response.text();
+                document.getElementById('home-result').innerHTML = 
+                    `<p class="success">✅ Backend is running!</p><pre>${text}</pre>`;
+            } catch (error) {
+                document.getElementById('home-result').innerHTML = 
+                    `<p class="error">❌ Backend error: ${error.message}</p>`;
+            }
+        }
+
+        // 2. Test Login
+        async function testLogin(username, password) {
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username, password})
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentToken = data.token;
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    document.getElementById('login-result').innerHTML = `
+                        <p class="success">✅ Login Successful!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        <p>Token saved: ${data.token.substring(0, 50)}...</p>
+                    `;
+                } else {
+                    document.getElementById('login-result').innerHTML = `
+                        <p class="error">❌ Login Failed</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('login-result').innerHTML = 
+                    `<p class="error">❌ Request failed: ${error.message}</p>`;
+            }
+        }
+
+        // 3. Test Protected APIs
+        async function testProtectedAPI(endpoint, name) {
+            const token = currentToken || localStorage.getItem('token');
+            
+            if (!token) {
+                document.getElementById('protected-result').innerHTML = 
+                    '<p class="error">❌ No token found. Please login first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('protected-result').innerHTML = `
+                        <p class="success">✅ ${name} - Success!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else {
+                    document.getElementById('protected-result').innerHTML = `
+                        <p class="error">❌ ${name} - Error: ${data.error || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('protected-result').innerHTML = 
+                    `<p class="error">❌ ${name} - Request failed: ${error.message}</p>`;
+            }
+        }
+
+        function testInventory() { testProtectedAPI('inventory', 'Inventory API'); }
+        function testDeliveries() { testProtectedAPI('deliveries', 'Deliveries API'); }
+        function testLowStock() { testProtectedAPI('low-stock', 'Low Stock API'); }
+
+        // 4. Token Management
+        function showToken() {
+            const token = currentToken || localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (token) {
+                document.getElementById('token-info').innerHTML = `
+                    <p class="success">✅ Token Present</p>
+                    <p><strong>Token:</strong> ${token.substring(0, 50)}...</p>
+                    <p><strong>User:</strong> ${user ? JSON.parse(user).username : 'Unknown'}</p>
+                `;
+            } else {
+                document.getElementById('token-info').innerHTML = 
+                    '<p class="error">❌ No token found</p>';
+            }
+        }
+
+        function clearToken() {
+            currentToken = '';
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.getElementById('token-info').innerHTML = 
+                '<p class="success">✅ Token cleared</p>';
+        }
+
+        // 5. Full Test
+        async function runFullTest() {
+            const results = [];
+            
+            // Test backend home
+            try {
+                const homeResponse = await fetch('https://supply-chain-ai.onrender.com/');
+                results.push(`✅ Backend Home: ${homeResponse.status}`);
+            } catch (e) {
+                results.push(`❌ Backend Home: ${e.message}`);
+            }
+            
+            // Test login
+            try {
+                const loginResponse = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: 'admin', password: 'admin123'})
+                });
+                const loginData = await loginResponse.json();
+                results.push(loginData.success ? '✅ Login API: Working' : '❌ Login API: Failed');
+                
+                if (loginData.success) {
+                    currentToken = loginData.token;
+                    // Test protected API
+                    const inventoryResponse = await fetch(`${API_BASE}/inventory`, {
+                        headers: {'Authorization': `Bearer ${currentToken}`}
+                    });
+                    results.push(inventoryResponse.ok ? '✅ Protected API: Working' : '❌ Protected API: Failed');
+                }
+            } catch (e) {
+                results.push(`❌ Login Test: ${e.message}`);
+            }
+            
+            document.getElementById('full-test-result').innerHTML = `
+                <h4>Test Results:</h4>
+                <ul>${results.map(r => `<li>${r}</li>`).join('')}</ul>
+            `;
+        }
+
+        // Load any existing token
+        showToken();
+    </script>
+</body>
+</html>

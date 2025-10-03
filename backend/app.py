@@ -2,66 +2,75 @@ import os
 import sqlite3
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from datetime import datetime
-from database import db  # Import our database
+from datetime import datetime, timedelta
+import jwt
 
 app = Flask(__name__)
 CORS(app)
 
+# Simple in-memory user database
+users_db = {
+    'admin': {'password': 'admin123', 'role': 'admin', 'company': 'TechCorp'},
+    'manager': {'password': 'manager123', 'role': 'manager', 'company': 'LogiTech'},
+    'viewer': {'password': 'viewer123', 'role': 'viewer', 'company': 'SupplyChain Inc'}
+}
+
+SECRET_KEY = 'supply-chain-ai-secret-key-2024'
+
+def generate_token(username):
+    payload = {
+        'username': username,
+        'role': users_db[username]['role'],
+        'company': users_db[username]['company'],
+        'exp': datetime.utcnow() + timedelta(hours=24)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+
+# Authentication routes
+@app.route('/api/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    if not data:
+        return jsonify({'success': False, 'error': 'No data provided'}), 400
+        
+    username = data.get('username')
+    password = data.get('password')
+
+    if username in users_db and users_db[username]['password'] == password:
+        token = generate_token(username)
+        return jsonify({
+            'success': True,
+            'token': token,
+            'user': {
+                'username': username,
+                'role': users_db[username]['role'],
+                'company': users_db[username]['company']
+            }
+        })
+
+    return jsonify({'success': False, 'error': 'Invalid credentials'}), 401
+
+# Public routes (no authentication needed)
 @app.route('/api/inventory')
 def get_inventory():
-    try:
-        inventory_data = db.get_inventory_summary()
-        return jsonify(inventory_data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return jsonify({
+        "total_units": 1635,
+        "status": "Good Stock", 
+        "low_stock_items_count": 0,
+        "warehouses": ["Mumbai", "Delhi", "Bangalore"]
+    })
 
 @app.route('/api/deliveries')
 def get_deliveries():
-    try:
-        delivery_data = db.get_delivery_summary()
-        return jsonify(delivery_data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/refresh', methods=['POST'])
-def refresh_data():
     return jsonify({
-        "status": "success", 
-        "message": "Data refreshed from database",
-        "timestamp": datetime.now().isoformat()
+        "active_deliveries": 2,
+        "delayed": 1, 
+        "on_time": 3
     })
-
-@app.route('/api/low-stock')
-def get_low_stock():
-    try:
-        conn = sqlite3.connect(db.db_name)
-        cursor = conn.cursor()
-        
-        cursor.execute('''
-            SELECT product_name, quantity, min_stock_level 
-            FROM inventory 
-            WHERE quantity < min_stock_level
-        ''')
-        
-        low_stock_items = [
-            {
-                "product": row[0],
-                "current_stock": row[1],
-                "min_required": row[2]
-            }
-            for row in cursor.fetchall()
-        ]
-        
-        conn.close()
-        
-        return jsonify({"low_stock_items": low_stock_items})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 @app.route('/')
 def home():
-    return "🚚 Supply Chain AI Backend with Database is Running!"
+    return "🚚 Supply Chain AI Backend with Authentication is Running!"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

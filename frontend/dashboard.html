@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Supply Chain AI - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .user-info {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🚚 Supply Chain AI Dashboard</h1>
+            <div>
+                <span class="user-info" id="userInfo">Loading...</span>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <h3>📦 Inventory Status</h3>
+                <p id="stock-level">Loading...</p>
+                <small id="company-info"></small>
+            </div>
+            <div class="card">
+                <h3>🚚 Active Deliveries</h3>
+                <p id="deliveries">Loading...</p>
+                <small id="delivery-info"></small>
+            </div>
+        </div>
+
+        <button onclick="refreshData()">Refresh Data</button>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html">← Back to Login</a>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Display user info
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        document.getElementById('userInfo').textContent = 
+            `${user.username} (${user.role}) - ${user.company}`;
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+
+        // Check authentication
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

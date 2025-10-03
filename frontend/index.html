@@ -1,24 +1,77 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Supply Chain AI - Dashboard</title>
+    <title>Supply Chain AI - Login</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .demo-accounts {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard">
-        <h1>🚚 Supply Chain AI Dashboard</h1>
-        <div class="cards">
-            <div class="card">
-                <h3>Inventory Status</h3>
-                <p id="stock-level">Loading...</p>
+    <div class="login-container">
+        <h1>🚚 Supply Chain AI</h1>
+        <p>Login to access your dashboard</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="username" required>
             </div>
-            <div class="card">
-                <h3>Active Deliveries</h3>
-                <p id="deliveries">Loading...</p>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="password" required>
             </div>
+            <button type="submit" class="btn-login">Login</button>
+        </form>
+
+        <div class="demo-accounts">
+            <h3>Demo Accounts:</h3>
+            <p><strong>Admin:</strong> admin / admin123</p>
+            <p><strong>Manager:</strong> manager / manager123</p>
+            <p><strong>Viewer:</strong> viewer / viewer123</p>
         </div>
-        <button onclick="refreshData()">Refresh Data</button>
+
+        <div id="message" style="margin-top: 15px;"></div>
     </div>
-    <script src="app.js"></script>
+
+    <script src="auth.js"></script>
 </body>
 </html>
