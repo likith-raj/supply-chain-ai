@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://supply-chain-ai.onrender.com/api';
 
 async function refreshData() {
     try {
