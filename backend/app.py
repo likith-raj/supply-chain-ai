@@ -70,7 +70,7 @@ def get_deliveries():
 
 @app.route('/')
 def home():
-    return "🚚 Supply Chain AI Backend with Authentication is Running!"
+return "🚚 Supply Chain AI Backend with Authentication is Running!"
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
